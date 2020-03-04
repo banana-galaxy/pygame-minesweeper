@@ -1,4 +1,4 @@
-import pygame, pyautogui, random
+import pygame, pyautogui, random, time
 
 
 class window():
@@ -171,6 +171,7 @@ pygame.display.set_caption("minesweeper")
 # Loop until the user clicks the close button.
 done = False
 lost = False
+won = False
 pressed = False
 pre_mouse_x = 0
 pre_mouse_y = 0
@@ -184,51 +185,60 @@ while not done:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r:
+                del minesweeper
+                minesweeper = window()
+                won = False
+                lost = False
  
     # --- Game logic should go here
+    if won == False and lost == False:
+        mouse = pygame.mouse.get_pos() # getting mpouse position
+        mouse_x = int(mouse[0]/minesweeper.cell_x) # getting mouse grid x postion
+        mouse_y = int(mouse[1]/minesweeper.cell_y) # getting mouse grid y postion
+        button = pygame.mouse.get_pressed() # getting mouse buttons' state
 
-    mouse = pygame.mouse.get_pos() # getting mpouse position
-    mouse_x = int(mouse[0]/minesweeper.cell_x) # getting mouse grid x postion
-    mouse_y = int(mouse[1]/minesweeper.cell_y) # getting mouse grid y postion
-    button = pygame.mouse.get_pressed() # getting mouse buttons' state
-
-    if button[0]: # if left mouse button is pressed, remove mask at mouse grid position
-        for x in range(len(minesweeper.mask)):
-            for y in range(len(minesweeper.mask[x])):
-                if x == mouse_x and y == mouse_y:
-                    if minesweeper.mask[x][y] != 10:
-                        minesweeper.mask[x][y] = 0
-                        if minesweeper.field[x][y] == 0:
-                            minesweeper.mask_check_neighbors(x,y)
-                        elif minesweeper.field[x][y] == -1:
-                            done = True
-                            lost = True
-    elif button[2] and not pressed:
-        pressed = True
-        for x in range(len(minesweeper.mask)):
-            for y in range(len(minesweeper.mask[x])):
-                if x == mouse_x and y == mouse_y:
-                    if minesweeper.mask[x][y] == 1:
-                        minesweeper.mask[x][y] = 10
-                    elif minesweeper.mask[x][y] == 10:
-                        minesweeper.mask[x][y] = 1
-    
-    if not button[2]:
-        pressed = False
-
-
-    # checking for win conditions
-    count = 0
-    for x in range(len(minesweeper.mask)):
-        for y in range(len(minesweeper.mask[x])):
-            if minesweeper.field[x][y] == -1 and minesweeper.mask[x][y] == 10:
-                count += 1
-    if count == minesweeper.mine_amount:
-        done = True
-
+        if button[0]: # if left mouse button is pressed, remove mask at mouse grid position
+            for x in range(len(minesweeper.mask)):
+                for y in range(len(minesweeper.mask[x])):
+                    if x == mouse_x and y == mouse_y:
+                        if minesweeper.mask[x][y] != 10:
+                            minesweeper.mask[x][y] = 0
+                            if minesweeper.field[x][y] == 0:
+                                minesweeper.mask_check_neighbors(x,y)
+                            elif minesweeper.field[x][y] == -1:
+                                lost = True
+        elif button[2] and not pressed:
+            pressed = True
+            for x in range(len(minesweeper.mask)):
+                for y in range(len(minesweeper.mask[x])):
+                    if x == mouse_x and y == mouse_y:
+                        if minesweeper.mask[x][y] == 1:
+                            minesweeper.mask[x][y] = 10
+                        elif minesweeper.mask[x][y] == 10:
+                            minesweeper.mask[x][y] = 1
         
-    pre_mouse_x = mouse_x
-    pre_mouse_y = mouse_y
+        if not button[2]:
+            pressed = False
+
+
+        # checking for win conditions
+        count = 0
+        for x in range(len(minesweeper.mask)):
+            for y in range(len(minesweeper.mask[x])):
+                if minesweeper.field[x][y] == -1 and minesweeper.mask[x][y] == 10:
+                    count += 1
+        if count == minesweeper.mine_amount:
+            for x in range(len(minesweeper.mask)):
+                for y in range(len(minesweeper.mask[x])):
+                    if minesweeper.field[x][y] > -1 and minesweeper.mask[x][y] == 1:
+                        minesweeper.mask[x][y] = 0
+            won = True
+
+            
+        pre_mouse_x = mouse_x
+        pre_mouse_y = mouse_y
     # --- Screen-clearing code goes here
  
     # Here, we clear the screen to white. Don't put other drawing commands
@@ -286,6 +296,25 @@ while not done:
         pygame.draw.line(screen, WHITE, [x*minesweeper.cell_x, 0], [x*minesweeper.cell_x, minesweeper.height], int(minesweeper.cell_x/10))
     for y in range(minesweeper.grid_size[1]+1):
         pygame.draw.line(screen, WHITE, [0, y*minesweeper.cell_y], [minesweeper.width, y*minesweeper.cell_y], int(minesweeper.cell_y/10))
+
+    # won
+    if won or lost:
+        # Select the font to use, size, bold, italics
+        if minesweeper.cell_x < minesweeper.cell_y:
+            font = pygame.font.SysFont('Calibri', minesweeper.cell_x, True, False)
+        else:
+            font = pygame.font.SysFont('Calibri', minesweeper.cell_y, True, False)
+
+        # Render the text. "True" means anti-aliased text.
+        # Black is the color. This creates an image of the
+        # letters, but does not put it on the screen
+        if won:
+            text = font.render("you won!", True, GREEN)
+        else:
+            text = font.render("you lost!", True, RED)
+
+        # Put the image of the text on the screen at 250x250
+        screen.blit(text, [minesweeper.width/2-minesweeper.cell_x, minesweeper.height/2-minesweeper.cell_y])
  
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
@@ -295,8 +324,3 @@ while not done:
  
 # Close the window and quit.
 pygame.quit()
-
-if lost:
-    print("looks like you lost")
-else:
-    print("ay, you got 'em all!")
