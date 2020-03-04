@@ -5,7 +5,7 @@ class window():
     def __init__(self):
         self.width = int(pyautogui.size()[0]/2/2)
         self.height = int(pyautogui.size()[1]/2)
-        self.grid_size = [15, 15]
+        self.grid_size = [10, 10]
         self.cell_x = int(self.width/self.grid_size[0])
         self.cell_y = int(self.height/self.grid_size[1])
         self.mine_amount = int(self.grid_size[0]*self.grid_size[1]/8)
@@ -21,15 +21,15 @@ class window():
                 self.field[x].append(0)
 
         for i in range(self.mine_amount):
-            x = random.randint(0, self.grid_size[0]-1)
-            y = random.randint(0, self.grid_size[1]-1)
+            x = random.randint(0, len(self.field)-1)
+            y = random.randint(0, len(self.field[0])-1)
             self.field[x][y] = -1
 
         for x in range(self.grid_size[0]):
             for y in range(self.grid_size[1]):
                 if self.field[x][y] == -1:
                     try:
-                        if self.field[x-1][y] != -1:
+                        if self.field[x-1][y] != -1 and x > 0:
                             self.field[x-1][y] += 1
                     except IndexError:
                         pass
@@ -44,18 +44,19 @@ class window():
                     except IndexError:
                         pass
                     try:
-                        if self.field[x][y-1] != -1:
+                        if self.field[x][y-1] != -1 and y > 0:
                             self.field[x][y-1] += 1
                     except IndexError:
                         pass
                     try:
-                        if self.field[x-1][y+1] != -1:
+                        if self.field[x-1][y+1] != -1 and x > 0:
                             self.field[x-1][y+1] += 1
                     except IndexError:
                         pass
                     try:
                         if self.field[x-1][y-1] != -1:
-                            self.field[x-1][y-1] += 1
+                            if x > 0 and y > 0:
+                                self.field[x-1][y-1] += 1
                     except IndexError:
                         pass
                     try:
@@ -64,7 +65,7 @@ class window():
                     except IndexError:
                         pass
                     try:
-                        if self.field[x+1][y-1] != -1:
+                        if self.field[x+1][y-1] != -1 and y > 0:
                             self.field[x+1][y-1] += 1
                     except IndexError:
                         pass
@@ -76,51 +77,68 @@ class window():
         
         self.check_list.append([x, y])
         try:
-            if self.field[x-1][y] == 0:
+            if self.field[x-1][y] == 0 and x > 0:
                 self.mask[x-1][y] = 0
                 self.mask_check_neighbors(x-1, y)
+            elif self.field[x-1][y] > 0 and x > 0:
+                self.mask[x-1][y] = 0
         except IndexError:
             pass
         try:
             if self.field[x+1][y] == 0:
                 self.mask[x+1][y] = 0
                 self.mask_check_neighbors(x+1, y)
+            elif self.field[x+1][y] > 0:
+                self.mask[x+1][y] = 0
         except IndexError:
             pass
         try:
             if self.field[x][y+1] == 0:
                 self.mask[x][y+1] = 0
                 self.mask_check_neighbors(x, y+1)
+            elif self.field[x][y+1] > 0:
+                self.mask[x][y+1] = 0
         except IndexError:
             pass
         try:
-            if self.field[x][y-1] == 0:
+            if self.field[x][y-1] == 0 and y > 0:
                 self.mask[x][y-1] = 0
                 self.mask_check_neighbors(x, y-1)
+            elif self.field[x][y-1] > 0 and y > 0:
+                self.mask[x][y-1] = 0
         except IndexError:
             pass
         try:
-            if self.field[x-1][y+1] == 0:
+            if self.field[x-1][y+1] == 0 and x > 0:
                 self.mask[x-1][y+1] = 0
                 self.mask_check_neighbors(x-1, y+1)
+            elif self.field[x-1][y+1] > 0 and x > 0:
+                self.mask[x-1][y+1] = 0
         except IndexError:
             pass
         try:
-            if self.field[x-1][y-1] == 0:
-                self.mask[x-1][y-1] = 0
-                self.mask_check_neighbors(x-1, y-1)
+            if x > 0 and y > 0:
+                if self.field[x-1][y-1] == 0:
+                    self.mask[x-1][y-1] = 0
+                    self.mask_check_neighbors(x-1, y-1)
+                elif self.field[x-1][y-1] > 0:
+                    self.mask[x-1][y-1] = 0
         except IndexError:
             pass
         try:
             if self.field[x+1][y+1] == 0:
                 self.mask[x+1][y+1] = 0
                 self.mask_check_neighbors(x+1, y+1)
+            elif self.field[x+1][y+1] > 0:
+                self.mask[x+1][y+1] = 0
         except IndexError:
             pass
         try:
-            if self.field[x+1][y-1] == 0:
+            if self.field[x+1][y-1] == 0 and y > 0:
                 self.mask[x+1][y-1] = 0
                 self.mask_check_neighbors(x+1, y-1)
+            elif self.field[x+1][y-1] > 0 and y > 0:
+                self.mask[x+1][y-1] = 0
         except IndexError:
             pass
                 
@@ -227,7 +245,7 @@ while not done:
                 text = font.render(str(minesweeper.field[x][y]), True, BLACK)
  
                 # Put the image of the text on the screen at 250x250
-                screen.blit(text, [x*minesweeper.cell_x+minesweeper.cell_x/10, y*minesweeper.cell_y+minesweeper.cell_y/10])
+                screen.blit(text, [x*minesweeper.cell_x+minesweeper.cell_x/5, y*minesweeper.cell_y+minesweeper.cell_y/5])
 
     # mask
     for x in range(len(minesweeper.mask)):
@@ -248,13 +266,13 @@ while not done:
                 text = font.render("!", True, BLACK)
  
                 # Put the image of the text on the screen at 250x250
-                screen.blit(text, [x*minesweeper.cell_x+10, y*minesweeper.cell_y+10])
+                screen.blit(text, [x*minesweeper.cell_x+minesweeper.cell_x/5, y*minesweeper.cell_y+minesweeper.cell_y/5])
 
     # grid
     for x in range(minesweeper.grid_size[0]+1):
-        pygame.draw.line(screen, WHITE, [x*minesweeper.cell_x, 0], [x*minesweeper.cell_x, minesweeper.height], 5)
+        pygame.draw.line(screen, WHITE, [x*minesweeper.cell_x, 0], [x*minesweeper.cell_x, minesweeper.height], int(minesweeper.cell_x/10))
     for y in range(minesweeper.grid_size[1]+1):
-        pygame.draw.line(screen, WHITE, [0, y*minesweeper.cell_y], [minesweeper.width, y*minesweeper.cell_y], 5)
+        pygame.draw.line(screen, WHITE, [0, y*minesweeper.cell_y], [minesweeper.width, y*minesweeper.cell_y], int(minesweeper.cell_y/10))
  
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
