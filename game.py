@@ -13,12 +13,15 @@ class window():
 
         self.mask = []
         self.field = []
+        self.defused = []
         for x in range(self.grid_size[0]):
             self.mask.append([])
             self.field.append([])
+            self.defused.append([])
             for y in range(self.grid_size[1]):
                 self.mask[x].append(1)
                 self.field[x].append(0)
+                self.defused[x].append(0)
 
         for i in range(self.mine_amount):
             x = random.randint(0, len(self.field)-1)
@@ -166,7 +169,7 @@ pygame.init()
 size = (minesweeper.width, minesweeper.height)
 screen = pygame.display.set_mode(size)
  
-pygame.display.set_caption("minesweeper")
+pygame.display.set_caption("Minesweeper: THE GAME (Deluxe Edition)")
  
 # Loop until the user clicks the close button.
 done = False
@@ -203,21 +206,28 @@ while not done:
             for x in range(len(minesweeper.mask)):
                 for y in range(len(minesweeper.mask[x])):
                     if x == mouse_x and y == mouse_y:
-                        if minesweeper.mask[x][y] != 10:
+                        if minesweeper.defused[x][y] == 0:
                             minesweeper.mask[x][y] = 0
                             if minesweeper.field[x][y] == 0:
                                 minesweeper.mask_check_neighbors(x,y)
-                            elif minesweeper.field[x][y] == -1:
+                            elif minesweeper.field[x][y] == -1: # lost
+                                for x in range(len(minesweeper.mask)):
+                                    for y in range(len(minesweeper.mask[x])):
+                                        if minesweeper.field[x][y] == -1:
+                                            minesweeper.mask[x][y] = 0
                                 lost = True
+                            elif minesweeper.field[x][y] > 0:
+                                #TODO
+                                pass
         elif button[2] and not pressed:
             pressed = True
             for x in range(len(minesweeper.mask)):
                 for y in range(len(minesweeper.mask[x])):
                     if x == mouse_x and y == mouse_y:
-                        if minesweeper.mask[x][y] == 1:
-                            minesweeper.mask[x][y] = 10
-                        elif minesweeper.mask[x][y] == 10:
-                            minesweeper.mask[x][y] = 1
+                        if minesweeper.defused[x][y] == 0:
+                            minesweeper.defused[x][y] = 1
+                        elif minesweeper.defused[x][y] == 1:
+                            minesweeper.defused[x][y] = 0
         
         if not button[2]:
             pressed = False
@@ -227,9 +237,9 @@ while not done:
         count = 0
         for x in range(len(minesweeper.mask)):
             for y in range(len(minesweeper.mask[x])):
-                if minesweeper.field[x][y] == -1 and minesweeper.mask[x][y] == 10:
+                if minesweeper.field[x][y] == -1 and minesweeper.defused[x][y] == 1:
                     count += 1
-        if count == minesweeper.mine_amount:
+        if count == minesweeper.mine_amount: # won
             for x in range(len(minesweeper.mask)):
                 for y in range(len(minesweeper.mask[x])):
                     if minesweeper.field[x][y] > -1 and minesweeper.mask[x][y] == 1:
@@ -275,8 +285,11 @@ while not done:
         for y in range(len(minesweeper.mask[x])):
             if minesweeper.mask[x][y] == 1:
                 pygame.draw.rect(screen,MASK,[x*minesweeper.cell_x,y*minesweeper.cell_y,minesweeper.cell_x,minesweeper.cell_y],0)
-            elif minesweeper.mask[x][y] == 10:
-                pygame.draw.rect(screen,MASK,[x*minesweeper.cell_x,y*minesweeper.cell_y,minesweeper.cell_x,minesweeper.cell_y],0)
+
+    # defused
+    for x in range(len(minesweeper.mask)):
+        for y in range(len(minesweeper.mask[x])):
+            if minesweeper.defused[x][y]:
                 # Select the font to use, size, bold, italics
                 if minesweeper.cell_x < minesweeper.cell_y:
                     font = pygame.font.SysFont('Calibri', minesweeper.cell_x, True, False)
