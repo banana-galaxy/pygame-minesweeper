@@ -23,6 +23,9 @@ class window():
         for i in range(self.mine_amount):
             x = random.randint(0, len(self.field)-1)
             y = random.randint(0, len(self.field[0])-1)
+            while self.field[x][y] == -1:
+                x = random.randint(0, len(self.field)-1)
+                y = random.randint(0, len(self.field[0])-1)
             self.field[x][y] = -1
 
         for x in range(self.grid_size[0]):
@@ -213,6 +216,16 @@ while not done:
     if not button[2]:
         pressed = False
 
+
+    # checking for win conditions
+    count = 0
+    for x in range(len(minesweeper.mask)):
+        for y in range(len(minesweeper.mask[x])):
+            if minesweeper.field[x][y] == -1 and minesweeper.mask[x][y] == 10:
+                count += 1
+    if count == minesweeper.mine_amount:
+        done = True
+
         
     pre_mouse_x = mouse_x
     pre_mouse_y = mouse_y
@@ -285,3 +298,5 @@ pygame.quit()
 
 if lost:
     print("looks like you lost")
+else:
+    print("ay, you got 'em all!")
