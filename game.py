@@ -1,14 +1,41 @@
 import pygame, pyautogui, random, time
 
 
+grid_size = input(f"grid size (leave blank for {20}x{15}): ")
+if grid_size != "":
+    grid_size = grid_size.split("x")
+    grid_size[0] = int(grid_size[0])
+    grid_size[1] = int(grid_size[1])
+    if grid_size[0] >= 40 or grid_size[1] >= 40:
+        caution = input("Carefull, at sizes like these the game will start being really slow. Are you sure you want to play with this grid size? [y/n]: ")
+        if caution == "n":
+            quit()
+else:
+    grid_size = [20, 15]
+
+bomb_amount = input(f"amount of mines (leave blank for {int(grid_size[0]*grid_size[1]/8)}): ")
+if bomb_amount != "":
+    bomb_amount = int(bomb_amount)
+else:
+    bomb_amount = int(grid_size[0]*grid_size[1]/8)
+
 class window():
     def __init__(self):
-        self.width = int(pyautogui.size()[0]/2)
-        self.height = int(pyautogui.size()[1]/1.5)
-        self.grid_size = [20, 15]
-        self.cell_x = int(self.width/self.grid_size[0])
-        self.cell_y = int(self.height/self.grid_size[1])
-        self.mine_amount = int(self.grid_size[0]*self.grid_size[1]/8)
+        global grid_size, bomb_amount
+        self.grid_size = grid_size
+        self.mine_amount = bomb_amount
+        if grid_size[0] < 25 and grid_size[1] < 25:
+            if self.grid_size[0] > self.grid_size[1]:
+                self.cell_size = int(pyautogui.size()[1]/2/self.grid_size[0])
+            else:
+                self.cell_size = int(pyautogui.size()[1]/2/self.grid_size[1])
+        else:
+            if self.grid_size[0] > self.grid_size[1]:
+                self.cell_size = int(pyautogui.size()[0]/2/self.grid_size[0])
+            else:
+                self.cell_size = int(pyautogui.size()[0]/2/self.grid_size[1])
+        self.width = self.cell_size*self.grid_size[0]
+        self.height = self.cell_size*self.grid_size[1]
         self.check_list = []
 
         self.mask = []
@@ -36,7 +63,7 @@ class window():
                 if self.field[x][y] == -1:
                     for xi in range(-1, 2):
                         for yi in range(-1, 2):
-                            if x+xi > 0 and y+yi > 0:
+                            if x+xi > -1 and y+yi > -1:
                                 try:
                                     if self.field[x+xi][y+yi] != -1:
                                         self.field[x+xi][y+yi] += 1
@@ -67,7 +94,7 @@ class window():
                         for yi in range(-1, 2):
                             try:
                                 if self.field[x+xi][y+yi] != -1:
-                                    if x+xi > 0 and y+yi > 0:
+                                    if x+xi > -1 and y+yi > -1:
                                         self.field[x+xi][y+yi] += 1
                             except IndexError:
                                 pass
@@ -80,7 +107,7 @@ class window():
         for xi in range(-1, 2):
             for yi in range(-1, 2):
                 try:
-                    if x+xi > 0 and y+yi > 0:
+                    if x+xi > -1 and y+yi > -1:
                         if self.field[x+xi][y+yi] == 0:
                             self.mask[x+xi][y+yi] = 0
                             self.mask_remove_neighbors(x+xi, y+yi)
@@ -95,7 +122,7 @@ class window():
             for yi in range(-1, 2):
                 try:
                     if list_type[x+xi][y+yi] == value:
-                        if x+xi > 0 and y+yi > 0:
+                        if x+xi > -1 and y+yi > -1:
                             neighbors.append([x+xi, y+yi])
                 except IndexError:
                     pass
@@ -114,16 +141,6 @@ class window():
 
 
 minesweeper = window()
-
-win_size = input(f"window size (leave blank for {minesweeper.width}x{minesweeper.height}): ")
-if win_size != "":
-    win_size = win_size.split("x")
-    minesweeper.width = win_size[0]
-    minesweeper.height = win_size[1]
-
-bomb_amount = input(f"amount of mines (leave blank for {minesweeper.mine_amount})")
-if bomb_amount != "":
-    minesweeper.set_mines(int(bomb_amount))
  
 # Define some colors
 BLACK = (0, 0, 0)
@@ -135,6 +152,9 @@ MINE = (255, 0, 0)
 MASK = (180, 180, 180)
  
 pygame.init()
+
+bomb_img = pygame.transform.scale(pygame.image.load("bomb.png"), (minesweeper.cell_size, minesweeper.cell_size))
+bombed_img = pygame.transform.scale(pygame.image.load("bombed.png"), (minesweeper.cell_size, minesweeper.cell_size))
  
 # Set the width and height of the screen [width, height]
 size = (minesweeper.width, minesweeper.height)
@@ -170,8 +190,8 @@ while not done:
     # --- Game logic should go here
     if won == False and lost == False:
         mouse = pygame.mouse.get_pos() # getting mpouse position
-        mouse_x = int(mouse[0]/minesweeper.cell_x) # getting mouse grid x postion
-        mouse_y = int(mouse[1]/minesweeper.cell_y) # getting mouse grid y postion
+        mouse_x = int(mouse[0]/minesweeper.cell_size) # getting mouse grid x postion
+        mouse_y = int(mouse[1]/minesweeper.cell_size) # getting mouse grid y postion
         button = pygame.mouse.get_pressed() # getting mouse buttons' state
 
         if l_pressed and button[0] == 0:
@@ -183,6 +203,8 @@ while not done:
                             if minesweeper.field[x][y] == 0:
                                 minesweeper.mask_remove_neighbors(x,y)
                             elif minesweeper.field[x][y] == -1: # lost
+                                minesweeper.field[x][y] = -2
+                                minesweeper.mask[x][y] = 0
                                 for x in range(len(minesweeper.mask)):
                                     for y in range(len(minesweeper.mask[x])):
                                         if minesweeper.field[x][y] == -1:
@@ -268,13 +290,16 @@ while not done:
     for x in range(len(minesweeper.field)):
         for y in range(len(minesweeper.field[x])):
             if minesweeper.field[x][y] == -1:
-                pygame.draw.rect(screen,MINE,[x*minesweeper.cell_x,y*minesweeper.cell_y,minesweeper.cell_x,minesweeper.cell_y],0)
+                screen.blit(bomb_img, (x*minesweeper.cell_size, y*minesweeper.cell_size))
+                #pygame.draw.rect(screen,MINE,[x*minesweeper.cell_size,y*minesweeper.cell_size,minesweeper.cell_size,minesweeper.cell_size],0)
+            elif minesweeper.field[x][y] == -2:
+                screen.blit(bombed_img, (x*minesweeper.cell_size, y*minesweeper.cell_size))
             elif minesweeper.field[x][y] > 0:
                 # Select the font to use, size, bold, italics
-                if minesweeper.cell_x < minesweeper.cell_y:
-                    font = pygame.font.SysFont('Calibri', minesweeper.cell_x, True, False)
+                if minesweeper.cell_size < minesweeper.cell_size:
+                    font = pygame.font.SysFont('Calibri', minesweeper.cell_size, True, False)
                 else:
-                    font = pygame.font.SysFont('Calibri', minesweeper.cell_y, True, False)
+                    font = pygame.font.SysFont('Calibri', minesweeper.cell_size, True, False)
  
                 # Render the text. "True" means anti-aliased text.
                 # Black is the color. This creates an image of the
@@ -282,23 +307,23 @@ while not done:
                 text = font.render(str(minesweeper.field[x][y]), True, BLACK)
  
                 # Put the image of the text on the screen at 250x250
-                screen.blit(text, [x*minesweeper.cell_x+minesweeper.cell_x/5, y*minesweeper.cell_y+minesweeper.cell_y/5])
+                screen.blit(text, [x*minesweeper.cell_size+minesweeper.cell_size/5, y*minesweeper.cell_size+minesweeper.cell_size/5])
 
     # mask
     for x in range(len(minesweeper.mask)):
         for y in range(len(minesweeper.mask[x])):
             if minesweeper.mask[x][y] == 1:
-                pygame.draw.rect(screen,MASK,[x*minesweeper.cell_x,y*minesweeper.cell_y,minesweeper.cell_x,minesweeper.cell_y],0)
+                pygame.draw.rect(screen,MASK,[x*minesweeper.cell_size,y*minesweeper.cell_size,minesweeper.cell_size,minesweeper.cell_size],0)
 
     # defused
     for x in range(len(minesweeper.mask)):
         for y in range(len(minesweeper.mask[x])):
             if minesweeper.defused[x][y]:
                 # Select the font to use, size, bold, italics
-                if minesweeper.cell_x < minesweeper.cell_y:
-                    font = pygame.font.SysFont('Calibri', minesweeper.cell_x, True, False)
+                if minesweeper.cell_size < minesweeper.cell_size:
+                    font = pygame.font.SysFont('Calibri', minesweeper.cell_size, True, False)
                 else:
-                    font = pygame.font.SysFont('Calibri', minesweeper.cell_y, True, False)
+                    font = pygame.font.SysFont('Calibri', minesweeper.cell_size, True, False)
  
                 # Render the text. "True" means anti-aliased text.
                 # Black is the color. This creates an image of the
@@ -306,21 +331,21 @@ while not done:
                 text = font.render("!", True, BLACK)
  
                 # Put the image of the text on the screen at 250x250
-                screen.blit(text, [x*minesweeper.cell_x+minesweeper.cell_x/5, y*minesweeper.cell_y+minesweeper.cell_y/5])
+                screen.blit(text, [x*minesweeper.cell_size+minesweeper.cell_size/5, y*minesweeper.cell_size+minesweeper.cell_size/5])
 
     # grid
     for x in range(minesweeper.grid_size[0]+1):
-        pygame.draw.line(screen, WHITE, [x*minesweeper.cell_x, 0], [x*minesweeper.cell_x, minesweeper.height], int(minesweeper.cell_x/10))
+        pygame.draw.line(screen, WHITE, [x*minesweeper.cell_size, 0], [x*minesweeper.cell_size, minesweeper.height], int(minesweeper.cell_size/10))
     for y in range(minesweeper.grid_size[1]+1):
-        pygame.draw.line(screen, WHITE, [0, y*minesweeper.cell_y], [minesweeper.width, y*minesweeper.cell_y], int(minesweeper.cell_y/10))
+        pygame.draw.line(screen, WHITE, [0, y*minesweeper.cell_size], [minesweeper.width, y*minesweeper.cell_size], int(minesweeper.cell_size/10))
 
     # won
     if won or lost:
         # Select the font to use, size, bold, italics
-        if minesweeper.cell_x < minesweeper.cell_y:
-            font = pygame.font.SysFont('Calibri', minesweeper.cell_x, True, False)
+        if minesweeper.cell_size < minesweeper.cell_size:
+            font = pygame.font.SysFont('Calibri', minesweeper.cell_size, True, False)
         else:
-            font = pygame.font.SysFont('Calibri', minesweeper.cell_y, True, False)
+            font = pygame.font.SysFont('Calibri', minesweeper.cell_size, True, False)
 
         # Render the text. "True" means anti-aliased text.
         # Black is the color. This creates an image of the
@@ -331,7 +356,7 @@ while not done:
             text = font.render("you lost!", True, RED)
 
         # Put the image of the text on the screen at 250x250
-        screen.blit(text, [minesweeper.width/2-minesweeper.cell_x, minesweeper.height/2-minesweeper.cell_y])
+        screen.blit(text, [minesweeper.width/2-minesweeper.cell_size, minesweeper.height/2-minesweeper.cell_size])
  
     # --- Go ahead and update the screen with what we've drawn.
     pygame.display.flip()
