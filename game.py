@@ -3,8 +3,8 @@ import pygame, pyautogui, random, time
 
 class window():
     def __init__(self):
-        self.width = int(pyautogui.size()[0]/2/2)
-        self.height = int(pyautogui.size()[1]/2)
+        self.width = int(pyautogui.size()[0]/2)
+        self.height = int(pyautogui.size()[1]/1.5)
         self.grid_size = [20, 15]
         self.cell_x = int(self.width/self.grid_size[0])
         self.cell_y = int(self.height/self.grid_size[1])
@@ -34,47 +34,14 @@ class window():
         for x in range(self.grid_size[0]):
             for y in range(self.grid_size[1]):
                 if self.field[x][y] == -1:
-                    try:
-                        if self.field[x-1][y] != -1 and x > 0:
-                            self.field[x-1][y] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x+1][y] != -1:
-                            self.field[x+1][y] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x][y+1] != -1:
-                            self.field[x][y+1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x][y-1] != -1 and y > 0:
-                            self.field[x][y-1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x-1][y+1] != -1 and x > 0:
-                            self.field[x-1][y+1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x-1][y-1] != -1:
-                            if x > 0 and y > 0:
-                                self.field[x-1][y-1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x+1][y+1] != -1:
-                            self.field[x+1][y+1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x+1][y-1] != -1 and y > 0:
-                            self.field[x+1][y-1] += 1
-                    except IndexError:
-                        pass
+                    for xi in range(-1, 2):
+                        for yi in range(-1, 2):
+                            if x+xi > 0 and y+yi > 0:
+                                try:
+                                    if self.field[x+xi][y+yi] != -1:
+                                        self.field[x+xi][y+yi] += 1
+                                except IndexError:
+                                    pass
     
     def set_mines(self, amount):
 
@@ -95,166 +62,43 @@ class window():
         for x in range(self.grid_size[0]):
             for y in range(self.grid_size[1]):
                 if self.field[x][y] == -1:
-                    try:
-                        if self.field[x-1][y] != -1 and x > 0:
-                            self.field[x-1][y] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x+1][y] != -1:
-                            self.field[x+1][y] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x][y+1] != -1:
-                            self.field[x][y+1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x][y-1] != -1 and y > 0:
-                            self.field[x][y-1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x-1][y+1] != -1 and x > 0:
-                            self.field[x-1][y+1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x-1][y-1] != -1:
-                            if x > 0 and y > 0:
-                                self.field[x-1][y-1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x+1][y+1] != -1:
-                            self.field[x+1][y+1] += 1
-                    except IndexError:
-                        pass
-                    try:
-                        if self.field[x+1][y-1] != -1 and y > 0:
-                            self.field[x+1][y-1] += 1
-                    except IndexError:
-                        pass
+
+                    for xi in range(-1, 2):
+                        for yi in range(-1, 2):
+                            try:
+                                if self.field[x+xi][y+yi] != -1:
+                                    if x+xi > 0 and y+yi > 0:
+                                        self.field[x+xi][y+yi] += 1
+                            except IndexError:
+                                pass
         
-
-
     def mask_remove_neighbors(self, x, y):
         for cell in self.check_list:
             if cell[0] == x and cell[1] == y:
                 return
-        
         self.check_list.append([x, y])
-        try:
-            if self.field[x-1][y] == 0 and x > 0:
-                self.mask[x-1][y] = 0
-                self.mask_remove_neighbors(x-1, y)
-            elif self.field[x-1][y] > 0 and x > 0:
-                self.mask[x-1][y] = 0
-        except IndexError:
-            pass
-        try:
-            if self.field[x+1][y] == 0:
-                self.mask[x+1][y] = 0
-                self.mask_remove_neighbors(x+1, y)
-            elif self.field[x+1][y] > 0:
-                self.mask[x+1][y] = 0
-        except IndexError:
-            pass
-        try:
-            if self.field[x][y+1] == 0:
-                self.mask[x][y+1] = 0
-                self.mask_remove_neighbors(x, y+1)
-            elif self.field[x][y+1] > 0:
-                self.mask[x][y+1] = 0
-        except IndexError:
-            pass
-        try:
-            if self.field[x][y-1] == 0 and y > 0:
-                self.mask[x][y-1] = 0
-                self.mask_remove_neighbors(x, y-1)
-            elif self.field[x][y-1] > 0 and y > 0:
-                self.mask[x][y-1] = 0
-        except IndexError:
-            pass
-        try:
-            if self.field[x-1][y+1] == 0 and x > 0:
-                self.mask[x-1][y+1] = 0
-                self.mask_remove_neighbors(x-1, y+1)
-            elif self.field[x-1][y+1] > 0 and x > 0:
-                self.mask[x-1][y+1] = 0
-        except IndexError:
-            pass
-        try:
-            if x > 0 and y > 0:
-                if self.field[x-1][y-1] == 0:
-                    self.mask[x-1][y-1] = 0
-                    self.mask_remove_neighbors(x-1, y-1)
-                elif self.field[x-1][y-1] > 0:
-                    self.mask[x-1][y-1] = 0
-        except IndexError:
-            pass
-        try:
-            if self.field[x+1][y+1] == 0:
-                self.mask[x+1][y+1] = 0
-                self.mask_remove_neighbors(x+1, y+1)
-            elif self.field[x+1][y+1] > 0:
-                self.mask[x+1][y+1] = 0
-        except IndexError:
-            pass
-        try:
-            if self.field[x+1][y-1] == 0 and y > 0:
-                self.mask[x+1][y-1] = 0
-                self.mask_remove_neighbors(x+1, y-1)
-            elif self.field[x+1][y-1] > 0 and y > 0:
-                self.mask[x+1][y-1] = 0
-        except IndexError:
-            pass
-    
+        for xi in range(-1, 2):
+            for yi in range(-1, 2):
+                try:
+                    if x+xi > 0 and y+yi > 0:
+                        if self.field[x+xi][y+yi] == 0:
+                            self.mask[x+xi][y+yi] = 0
+                            self.mask_remove_neighbors(x+xi, y+yi)
+                        elif self.field[x+xi][y+yi] > 0:
+                            self.mask[x+xi][y+yi] = 0
+                except IndexError:
+                    pass
+
     def check_neighbors(self, x, y, value, list_type):
         neighbors = []
-        try:
-            if list_type[x-1][y] == value and x > 0:
-                neighbors.append([x-1, y])
-        except IndexError:
-            pass
-        try:
-            if list_type[x+1][y] == value:
-                neighbors.append([x+1, y])
-        except IndexError:
-            pass
-        try:
-            if list_type[x][y+1] == value:
-                neighbors.append([x, y+1])
-        except IndexError:
-            pass
-        try:
-            if list_type[x][y-1] == value and y > 0:
-                neighbors.append([x, y-1])
-        except IndexError:
-            pass
-        try:
-            if list_type[x-1][y+1] == value and x > 0:
-                neighbors.append([x-1, y+1])
-        except IndexError:
-            pass
-        try:
-            if x > 0 and y > 0:
-                if list_type[x-1][y-1] == value:
-                    neighbors.append([x-1, y-1])
-        except IndexError:
-            pass
-        try:
-            if list_type[x+1][y+1] == value:
-                neighbors.append([x+1, y+1])
-        except IndexError:
-            pass
-        try:
-            if list_type[x+1][y-1] == value and y > 0:
-                neighbors.append([x+1, y-1])
-        except IndexError:
-            pass
-
+        for xi in range(-1, 2):
+            for yi in range(-1, 2):
+                try:
+                    if list_type[x+xi][y+yi] == value:
+                        if x+xi > 0 and y+yi > 0:
+                            neighbors.append([x+xi, y+yi])
+                except IndexError:
+                    pass
         return neighbors
 
     def check_mask(self, x, y, value):
@@ -302,7 +146,8 @@ pygame.display.set_caption("Minesweeper")
 done = False
 lost = False
 won = False
-pressed = False
+r_pressed = False
+l_pressed = False
 pre_mouse_x = 0
 pre_mouse_y = 0
  
@@ -329,7 +174,8 @@ while not done:
         mouse_y = int(mouse[1]/minesweeper.cell_y) # getting mouse grid y postion
         button = pygame.mouse.get_pressed() # getting mouse buttons' state
 
-        if button[0]: # if left mouse button is pressed, remove mask at mouse grid position
+        if l_pressed and button[0] == 0:
+            l_pressed = False
             for x in range(len(minesweeper.mask)):
                 for y in range(len(minesweeper.mask[x])):
                     if x == mouse_x and y == mouse_y:
@@ -372,8 +218,12 @@ while not done:
                                                 minesweeper.mask[x][y] = 0
                                     lost = True
                             minesweeper.mask[x][y] = 0
-        elif button[2] and not pressed:
-            pressed = True
+
+        if button[0]: # if left mouse button is r_pressed, remove mask at mouse grid position
+            l_pressed = True
+            
+        elif button[2] and not r_pressed:
+            r_pressed = True
             for x in range(len(minesweeper.mask)):
                 for y in range(len(minesweeper.mask[x])):
                     if x == mouse_x and y == mouse_y:
@@ -384,7 +234,7 @@ while not done:
                                 minesweeper.defused[x][y] = 0
         
         if not button[2]:
-            pressed = False
+            r_pressed = False
 
 
         # checking for win conditions
