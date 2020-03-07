@@ -155,6 +155,9 @@ pygame.init()
 
 bomb_img = pygame.transform.scale(pygame.image.load("bomb.png"), (minesweeper.cell_size, minesweeper.cell_size))
 bombed_img = pygame.transform.scale(pygame.image.load("bombed.png"), (minesweeper.cell_size, minesweeper.cell_size))
+flag_img = pygame.transform.scale(pygame.image.load("flag.png"), (minesweeper.cell_size, minesweeper.cell_size))
+flagged_img = pygame.transform.scale(pygame.image.load("flaged_bomb.png"), (minesweeper.cell_size, minesweeper.cell_size))
+flag_temp_img = pygame.transform.scale(pygame.image.load("flag_temp.png"), (minesweeper.cell_size, minesweeper.cell_size))
  
 # Set the width and height of the screen [width, height]
 size = (minesweeper.width, minesweeper.height)
@@ -253,6 +256,8 @@ while not done:
                             if minesweeper.defused[x][y] == 0:
                                 minesweeper.defused[x][y] = 1
                             elif minesweeper.defused[x][y] == 1:
+                                minesweeper.defused[x][y] = 2
+                            elif minesweeper.defused[x][y] == 2:
                                 minesweeper.defused[x][y] = 0
         
         if not button[2]:
@@ -318,8 +323,15 @@ while not done:
     # defused
     for x in range(len(minesweeper.mask)):
         for y in range(len(minesweeper.mask[x])):
-            if minesweeper.defused[x][y]:
-                # Select the font to use, size, bold, italics
+            if minesweeper.defused[x][y] == 1:
+                if won or lost:
+                    screen.blit(flagged_img, (x*minesweeper.cell_size, y*minesweeper.cell_size))
+                else:
+                    screen.blit(flag_img, (x*minesweeper.cell_size, y*minesweeper.cell_size))
+            elif minesweeper.defused[x][y] == 2:
+                if won == False and lost == False:
+                    screen.blit(flag_temp_img, (x*minesweeper.cell_size, y*minesweeper.cell_size))
+                '''# Select the font to use, size, bold, italics
                 if minesweeper.cell_size < minesweeper.cell_size:
                     font = pygame.font.SysFont('Calibri', minesweeper.cell_size, True, False)
                 else:
@@ -331,7 +343,7 @@ while not done:
                 text = font.render("!", True, BLACK)
  
                 # Put the image of the text on the screen at 250x250
-                screen.blit(text, [x*minesweeper.cell_size+minesweeper.cell_size/5, y*minesweeper.cell_size+minesweeper.cell_size/5])
+                screen.blit(text, [x*minesweeper.cell_size+minesweeper.cell_size/5, y*minesweeper.cell_size+minesweeper.cell_size/5])'''
 
     # grid
     for x in range(minesweeper.grid_size[0]+1):
