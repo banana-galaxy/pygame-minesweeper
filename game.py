@@ -1,7 +1,7 @@
 import pygame, pyautogui, random, time
 
 
-grid_size = input(f"grid size (leave blank for {20}x{15}): ")
+grid_size = input(f"grid size (leave blank for {10}x{10}): ")
 if grid_size != "":
     grid_size = grid_size.split("x")
     grid_size[0] = int(grid_size[0])
@@ -11,7 +11,7 @@ if grid_size != "":
         if caution == "n":
             quit()
 else:
-    grid_size = [20, 15]
+    grid_size = [10, 10]
 
 bomb_amount = input(f"amount of mines (leave blank for {int(grid_size[0]*grid_size[1]/8)}): ")
 if bomb_amount != "":
