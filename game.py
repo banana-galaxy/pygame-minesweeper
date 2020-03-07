@@ -324,26 +324,14 @@ while not done:
     for x in range(len(minesweeper.mask)):
         for y in range(len(minesweeper.mask[x])):
             if minesweeper.defused[x][y] == 1:
-                if won or lost:
+                if lost:
+                    #if minesweeper.field[x][y]
                     screen.blit(flagged_img, (x*minesweeper.cell_size, y*minesweeper.cell_size))
                 else:
                     screen.blit(flag_img, (x*minesweeper.cell_size, y*minesweeper.cell_size))
             elif minesweeper.defused[x][y] == 2:
                 if won == False and lost == False:
                     screen.blit(flag_temp_img, (x*minesweeper.cell_size, y*minesweeper.cell_size))
-                '''# Select the font to use, size, bold, italics
-                if minesweeper.cell_size < minesweeper.cell_size:
-                    font = pygame.font.SysFont('Calibri', minesweeper.cell_size, True, False)
-                else:
-                    font = pygame.font.SysFont('Calibri', minesweeper.cell_size, True, False)
- 
-                # Render the text. "True" means anti-aliased text.
-                # Black is the color. This creates an image of the
-                # letters, but does not put it on the screen
-                text = font.render("!", True, BLACK)
- 
-                # Put the image of the text on the screen at 250x250
-                screen.blit(text, [x*minesweeper.cell_size+minesweeper.cell_size/5, y*minesweeper.cell_size+minesweeper.cell_size/5])'''
 
     # grid
     for x in range(minesweeper.grid_size[0]+1):
